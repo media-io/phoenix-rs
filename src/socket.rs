@@ -72,7 +72,7 @@ impl Phoenix {
 				let message = match message {
 					Ok(m) => m,
 					Err(e) => {
-						println!("Receive Loop: {:?}", e);
+						//println!("Receive Loop: {:?}", e);
 						let _ = tx_1.send(OwnedMessage::Close(None));
 						return;
 					}
@@ -90,7 +90,7 @@ impl Phoenix {
 							// Send a pong in response
 							Ok(()) => (),
 							Err(e) => {
-								println!("Receive Loop: {:?}", e);
+								//println!("Ping: {:?}", e);
 								return;
 							}
 						}
@@ -98,12 +98,11 @@ impl Phoenix {
 
 					// Say what we received
 					OwnedMessage::Text(data) => {
-						//println!("Receive Loop: {:?}", data);
 						let v: PhoenixMessage = serde_json::from_str(&data).unwrap();
 						send.send(v);
 					},
 					
-					_ => println!("Receive Loop: {:?}", message)
+					_ => ()//println!("Receive Loop: {:?}", message)
 				}
 			}
 		});
