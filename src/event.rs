@@ -1,19 +1,19 @@
-use rustc_serialize::{Decodable, Decoder};
+//use rustc_serialize::{Decodable, Decoder};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Event {
-    Close,
-    Error,
-    Heartbeat,
-    Join,
-    Leave,
-    PresenceDiff,
-    PresenceState,
-    Reply,
+    phx_close,
+    phx_error,
+    heartbeat,
+    phx_join,
+    phx_leave,
+    presence_diff,
+    presence_state,
+    phx_reply,
     User(String),
 }
 
-impl Decodable for Event {
+/*impl Decodable for Event {
     fn decode<D: Decoder>(d: &mut D) -> Result<Event, D::Error> {
         let event: Option<String> = try!(d.read_struct_field("event", 0, |d| Decodable::decode(d)));
         match event {
@@ -42,4 +42,4 @@ impl ToString for Event {
             _ => "unknow".to_owned()
         }
     }
-}
+}*/

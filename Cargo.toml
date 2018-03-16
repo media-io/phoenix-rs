@@ -7,11 +7,10 @@ description = "Rust client for Phoenix channels"
 license = "MIT"
 
 [dependencies]
-websocket = "0.20.2"
-serde_json = "1.0.9"
-serde_derive = "1.0.27"
-serde = "1.0.27"
-rustc-serialize = "0.3"
+websocket = "0.20"
+serde_json = "1.0"
+serde_derive = "1.0"
+serde = "1.0"
 
 [lib]
 name = "phoenix"

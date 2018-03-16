@@ -3,6 +3,8 @@
 This library is an attempt to create Phoenix client in Rust.
 It is a work in progress so don't use it in production.
 
+This crate is tested with https://github.com/laibulle/phoenix_channel_demo
+
 __example__
 ```rust
 extern crate phoenix;
