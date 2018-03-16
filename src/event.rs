@@ -1,16 +1,18 @@
-//use rustc_serialize::{Decodable, Decoder};
-
-#[derive(Serialize, Deserialize, Debug)]
+use std::fmt;
+#[derive(Debug)]
 pub enum Event {
-    phx_close,
-    phx_error,
-    heartbeat,
-    phx_join,
-    phx_leave,
-    presence_diff,
-    presence_state,
-    phx_reply,
-    User(String),
+    Join,
+    Custom(String),
+}
+
+impl fmt::Display for Event {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        
+        match self {
+            &Event::Join => write!(f, "{}", "phx_join"),
+            &Event::Custom(ref x) => write!(f, "{}", x)
+        }
+    }
 }
 
 /*impl Decodable for Event {
@@ -27,19 +29,18 @@ pub enum Event {
                     "presence_diff" => Ok(Event::PresenceDiff),
                     "presence_state" => Ok(Event::PresenceState),
                     "phx_reply" => Ok(Event::Reply),
-                    other => Ok(Event::User(other.to_string()))
+                    other => Ok(Event::Custom(other.to_string()))
                 }
             }
-            None => Ok(Event::User("unknown".to_string())),
-        }
-    }
-}
-
-impl ToString for Event {
-    fn to_string(&self) -> String {
-        match *self {
-            Event::Join => "phx_join".to_owned(),
-            _ => "unknow".to_owned()
+            None => Ok(Event::Custom("unknown".to_string())),
         }
     }
 }*/
+
+#[test]
+fn it_works() {
+    //let val = serde_json::to_string(&Event::Custom("blablabla".to_string())).unwrap();
+    let val = Event::Custom("blablabla".to_string()).to_string();
+    println!("{}", val);
+    assert_eq!(val, "blablabla");
+}

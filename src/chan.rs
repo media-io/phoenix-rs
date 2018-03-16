@@ -24,7 +24,7 @@ impl Channel {
     pub fn send(&mut self, event: Event, msg: Value) {
         let msg = Message {
             topic: self.topic.to_owned(),
-            event: event,
+            event: event.to_string(),
             reference: Some(self.reference.to_owned()),
             join_ref: Some(self.reference.to_owned()),
             payload: msg.to_owned(),
@@ -38,7 +38,7 @@ impl Channel {
     pub fn join(&mut self) {
         let msg = Message {
             topic: self.topic.to_owned(),
-            event: Event::phx_join,
+            event: Event::Join.to_string(),
             reference: Some(self.reference.to_owned()),
             join_ref: Some(self.reference.to_owned()),
             payload: Value::Null,

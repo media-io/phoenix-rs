@@ -4,7 +4,7 @@ use event::Event;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Message {
     pub topic: String,
-    pub event: Event,
+    pub event: String,
     #[serde(rename = "ref")]
 	pub reference: Option<String>,
     pub join_ref: Option<String>,
