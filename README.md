@@ -1,7 +1,6 @@
 # Phoenix Channels client for Rust
 
-This library is an attempt to create Phoenix client in Rust.
-It is a work in progress so don't use it in production.
+This library is an attempt to create Phoenix client in Rust. 
 
 This crate is tested with https://github.com/laibulle/phoenix_channel_demo
 
