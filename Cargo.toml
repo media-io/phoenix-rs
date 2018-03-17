@@ -1,6 +1,6 @@
 [package]
 name = "phoenix"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Guillaume Bailleul <laibulle@gmail.com>"]
 repository = "https://github.com/laibulle/phoenix-rs"
 description = "Rust client for Phoenix channels"
