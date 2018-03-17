@@ -12,6 +12,7 @@ fn main() {
     
     let url = "ws://localhost:4000/socket";
 
+    // Simulate a user
     thread::spawn(move || {
         let mut phx = Phoenix::new(url);
         let mutex_chan = phx.channel("room:lobby").clone();
@@ -19,7 +20,6 @@ fn main() {
         {
             let mut device_chan = mutex_chan.lock().unwrap();
             device_chan.join();
-            //device_chan.send(Event::User("get_home_id".to_string()), json!({}));
         }
 
         loop {
@@ -32,6 +32,7 @@ fn main() {
 
     thread::sleep(time::Duration::from_millis(500));
 
+    // Simulate an other user
     let mut phx = Phoenix::new(url);
     let mutex_chan = phx.channel("room:lobby").clone();
 
