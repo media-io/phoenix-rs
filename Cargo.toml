@@ -1,5 +1,5 @@
 [package]
-name = "phoenix-rs"
+name = "phoenix"
 version = "0.1.1"
 authors = ["Guillaume Bailleul <laibulle@gmail.com>"]
 repository = "https://github.com/laibulle/phoenix-rs"
