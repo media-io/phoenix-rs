@@ -4,7 +4,7 @@ use serde_json::Value;
 use serde_json;
 
 use message::Message;
-use event::Event;
+use event::{Event, PhoenixEvent};
 
 pub struct Channel {
     topic: String,
@@ -38,7 +38,7 @@ impl Channel {
     pub fn join(&mut self) {
         let msg = Message {
             topic: self.topic.to_owned(),
-            event: Event::phx_join,
+            event: Event::Defined(PhoenixEvent::Join),
             reference: Some(self.reference.to_owned()),
             join_ref: Some(self.reference.to_owned()),
             payload: Value::Null,

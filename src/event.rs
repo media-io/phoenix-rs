@@ -1,45 +1,31 @@
-//use rustc_serialize::{Decodable, Decoder};
+use std::fmt;
+use serde_json;
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
 pub enum Event {
-    phx_close,
-    phx_error,
-    heartbeat,
-    phx_join,
-    phx_leave,
-    presence_diff,
-    presence_state,
-    phx_reply,
-    User(String),
+    Defined(PhoenixEvent),
+    Custom(String),
 }
 
-/*impl Decodable for Event {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Event, D::Error> {
-        let event: Option<String> = try!(d.read_struct_field("event", 0, |d| Decodable::decode(d)));
-        match event {
-            Some(event) => {
-                match event.as_ref() {
-                    "heartbeat" => Ok(Event::Heartbeat),
-                    "phx_close" => Ok(Event::Close),
-                    "phx_error" => Ok(Event::Error),
-                    "phx_join" => Ok(Event::Join),
-                    "phx_leave" => Ok(Event::Leave),
-                    "presence_diff" => Ok(Event::PresenceDiff),
-                    "presence_state" => Ok(Event::PresenceState),
-                    "phx_reply" => Ok(Event::Reply),
-                    other => Ok(Event::User(other.to_string()))
-                }
-            }
-            None => Ok(Event::User("unknown".to_string())),
-        }
-    }
+#[derive(Serialize, Deserialize, Debug)]
+pub enum PhoenixEvent {
+    #[serde(rename="phx_join")]
+    Join,
+    #[serde(rename="phx_close")]
+    Close
 }
 
-impl ToString for Event {
-    fn to_string(&self) -> String {
-        match *self {
-            Event::Join => "phx_join".to_owned(),
-            _ => "unknow".to_owned()
-        }
-    }
-}*/
+#[derive(Serialize, Deserialize)]
+pub struct Test {
+    event: Event
+}
+
+
+#[test]
+fn test_event_serialization() {
+    let t = Test{event: Event::Custom("blablabla".to_string())};
+    let val = serde_json::to_string(&t).unwrap();
+    println!("{}", val);
+    assert_eq!(val, "{\"event\":\"blablabla\"}");
+}

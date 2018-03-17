@@ -33,16 +33,17 @@ impl Phoenix {
 				// Send loop
 				let message = match rx.recv() {
 					Ok(m) => {
-						//println!("Send Loop: {:?}", m);
+						debug!("Send Loop: {:?}", m);
 						m
 					},
 					Err(e) => {
-						println!("Send Loop: {:?}", e);
+						error!("Send Loop: {:?}", e);
 						return;
 					}
 				};
 				match message {
 					OwnedMessage::Close(_) => {
+						debug!("Received a close message");
 						let _ = sender.send_message(&message);
 						// If it's a close message, just send it and then return.
 						return;
@@ -53,7 +54,7 @@ impl Phoenix {
 				match sender.send_message(&message) {
 					Ok(()) => (),
 					Err(e) => {
-						//println!("Send Loop: {:?}", e);
+						error!("Send Loop: {:?}", e);
 						let _ = sender.send_message(&Message::close());
 						return;
 					}
@@ -62,8 +63,6 @@ impl Phoenix {
 		});
 
 		let channels: Arc<Mutex<Vec<Arc<Mutex<Channel>>>>> = Arc::new(Mutex::new(vec![]));
-		let channels_1 = channels.clone();
-
 		let (send, recv) = channel();
 
 		thread::spawn(move || {
@@ -72,7 +71,7 @@ impl Phoenix {
 				let message = match message {
 					Ok(m) => m,
 					Err(e) => {
-						//println!("Receive Loop: {:?}", e);
+						error!("Receive Loop: {:?}", e);
 						let _ = tx_1.send(OwnedMessage::Close(None));
 						return;
 					}
@@ -88,9 +87,9 @@ impl Phoenix {
 					OwnedMessage::Ping(data) => {
 						match tx_1.send(OwnedMessage::Pong(data)) {
 							// Send a pong in response
-							Ok(()) => (),
+							Ok(()) => debug!("Received ping"),
 							Err(e) => {
-								//println!("Ping: {:?}", e);
+								error!("Ping: {:?}", e);
 								return;
 							}
 						}
@@ -102,7 +101,7 @@ impl Phoenix {
 						send.send(v);
 					},
 					
-					_ => ()//println!("Receive Loop: {:?}", message)
+					message => debug!("Receive Loop: {:?}", message)
 				}
 			}
 		});
