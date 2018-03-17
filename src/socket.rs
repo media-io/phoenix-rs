@@ -1,12 +1,14 @@
-use std::thread;
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
+use std::{thread, time};
+
 use websocket::{Message, OwnedMessage};
 use websocket::client::ClientBuilder;
-use std::sync::mpsc::Sender;
-use chan::Channel;
 use serde_json;
+
+use chan::Channel;
 use message::{Message as PhoenixMessage};
+use event::{PhoenixEvent, Event};
 
 pub struct Phoenix {
 	tx: Sender<OwnedMessage>,
@@ -78,7 +80,8 @@ impl Phoenix {
 				};
 
 				match message {
-					OwnedMessage::Close(_) => {
+					OwnedMessage::Close(x) => {
+						debug!("Received close {:?}", x);
 						// Got a close message, so send a close message and return
 						let _ = tx_1.send(OwnedMessage::Close(None));
 						return;
@@ -105,6 +108,27 @@ impl Phoenix {
 				}
 			}
 		});
+
+        let tx_h = tx.clone();
+        thread::spawn(move || {
+            loop {
+
+                let msg = PhoenixMessage {
+                    topic: "phoenix".to_owned(),
+                    event: Event::Defined(PhoenixEvent::Heartbeat),
+                    reference: None,
+                    join_ref: None,
+                    payload: serde_json::from_str("{}").unwrap(),
+                };
+
+
+                tx_h
+                    .send(OwnedMessage::Text(serde_json::to_string(&msg).unwrap()))
+                    .unwrap();
+
+                thread::sleep(time::Duration::from_secs(30));
+            }
+        });
 
 
 		Phoenix{

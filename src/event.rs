@@ -15,7 +15,9 @@ pub enum PhoenixEvent {
     #[serde(rename="phx_close")]
     Close,
     #[serde(rename="phx_reply")]
-    Reply
+    Reply,
+    #[serde(rename="heartbeat")]
+    Heartbeat
 }
 
 #[derive(Serialize, Deserialize)]
