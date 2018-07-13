@@ -47,4 +47,17 @@ impl Channel {
             .send(OwnedMessage::Text(serde_json::to_string(&msg).unwrap()))
             .unwrap();
     }
+
+    pub fn join_with_message(&mut self, payload: Value) {
+        let msg = Message {
+            topic: self.topic.to_owned(),
+            event: Event::Defined(PhoenixEvent::Join),
+            reference: Some(self.reference.to_owned()),
+            join_ref: Some(self.reference.to_owned()),
+            payload: payload,
+        };
+        self.tx
+            .send(OwnedMessage::Text(serde_json::to_string(&msg).unwrap()))
+            .unwrap();
+    }
 }
