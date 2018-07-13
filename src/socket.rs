@@ -1,3 +1,5 @@
+
+use std::collections::HashMap;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::{thread, time};
@@ -19,7 +21,32 @@ pub struct Phoenix {
 
 impl Phoenix {
 	pub fn new(url: &str) -> Phoenix {
-		let client = ClientBuilder::new(&format!("{}/websocket", url))
+		Phoenix::new_with_parameters(url, &HashMap::new())
+	}
+
+	pub fn new_with_parameters(url: &str, params: &HashMap<&str, &str>) -> Phoenix {
+		let full_url =
+			if params.is_empty() {
+				format!("{}/websocket", url)
+			} else {
+				let mut joined_params = "".to_owned();
+				for (index, (key, value)) in params.iter().enumerate() {
+					joined_params +=
+						if index == 0 {
+							"?"
+						} else {
+							"&"
+						};
+					joined_params += key;
+					joined_params += "=";
+					joined_params += value;
+				}
+				format!("{}/websocket{}", url, joined_params)
+			};
+
+		debug!("connect socket to URL: {}", full_url);
+
+		let client = ClientBuilder::new(&full_url)
 			.unwrap()
 			.connect_insecure()
 			.unwrap();
