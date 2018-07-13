@@ -14,8 +14,8 @@ pub mod socket;
 pub mod chan;
 pub mod message;
 
-pub use error::{Error};
-pub use event::{Event};
+pub use error::Error;
+pub use event::Event;
 pub use socket::Phoenix;
-pub use chan::{Channel};
-pub use message::{Message};
+pub use chan::Channel;
+pub use message::Message;
