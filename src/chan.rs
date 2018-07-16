@@ -1,5 +1,5 @@
-use serde_json::Value;
 use serde_json;
+use serde_json::Value;
 use std::sync::mpsc::Sender;
 use websocket::OwnedMessage;
 

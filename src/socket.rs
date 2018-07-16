@@ -4,8 +4,8 @@ use std::sync::{Arc, Mutex};
 use std::{thread, time};
 
 use serde_json;
-use websocket::{Message, OwnedMessage};
 use websocket::client::ClientBuilder;
+use websocket::{Message, OwnedMessage};
 
 use chan::Channel;
 use event::{Event, PhoenixEvent};
