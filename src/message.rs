@@ -1,5 +1,5 @@
-use serde_json::Value;
 use event::Event;
+use serde_json::Value;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Message {

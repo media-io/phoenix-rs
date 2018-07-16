@@ -1,10 +1,10 @@
-use std::sync::mpsc::Sender;
-use websocket::OwnedMessage;
 use serde_json::Value;
 use serde_json;
+use std::sync::mpsc::Sender;
+use websocket::OwnedMessage;
 
-use message::Message;
 use event::{Event, PhoenixEvent};
+use message::Message;
 
 pub struct Channel {
   topic: String,

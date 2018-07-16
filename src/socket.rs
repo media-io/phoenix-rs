@@ -3,13 +3,13 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::{thread, time};
 
+use serde_json;
 use websocket::{Message, OwnedMessage};
 use websocket::client::ClientBuilder;
-use serde_json;
 
 use chan::Channel;
-use message::Message as PhoenixMessage;
 use event::{Event, PhoenixEvent};
+use message::Message as PhoenixMessage;
 
 pub struct Phoenix {
   tx: Sender<OwnedMessage>,

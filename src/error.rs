@@ -1,6 +1,6 @@
+use std::error;
 use std::fmt;
 use std::io;
-use std::error;
 use std::string::FromUtf8Error;
 
 #[derive(Debug)]

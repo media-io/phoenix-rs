@@ -4,8 +4,8 @@ extern crate serde_json;
 
 extern crate env_logger;
 
-use std::{thread, time};
 use phoenix::{Event, Phoenix};
+use std::{thread, time};
 
 fn main() {
   env_logger::init();
