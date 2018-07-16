@@ -23,7 +23,3 @@ travis-ci = { repository = "laibulle/phoenix-rs" }
 [lib]
 name = "phoenix"
 path = "src/lib.rs"
-
-[[bin]]
-name = "phoenix-example"
-path = "examples/basic.rs"
