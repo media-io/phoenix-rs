@@ -140,8 +140,8 @@ impl Phoenix {
                       .send(OwnedMessage::Text(serde_json::to_string(&msg).unwrap()))
                       .unwrap();
 
-      thread::sleep(time::Duration::from_secs(30));
-    });
+                    thread::sleep(time::Duration::from_secs(30));
+                  });
 
     Phoenix {
       tx: tx.clone(),
