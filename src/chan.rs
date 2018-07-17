@@ -16,7 +16,7 @@ impl Channel {
   pub fn new(topic: &str, tx: Sender<OwnedMessage>, reference: &str) -> Channel {
     Channel {
       topic: topic.to_owned(),
-      tx,
+      tx: tx,
       reference: reference.to_owned(),
     }
   }
@@ -24,7 +24,7 @@ impl Channel {
   pub fn send(&mut self, event: Event, msg: Value) {
     let msg = Message {
       topic: self.topic.to_owned(),
-      event,
+      event: event,
       reference: Some(self.reference.to_owned()),
       join_ref: Some(self.reference.to_owned()),
       payload: msg.to_owned(),

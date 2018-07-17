@@ -27,9 +27,7 @@ pub struct Test {
 
 #[test]
 fn test_event_serialization() {
-  let t = Test {
-    event: Event::Custom("blablabla".to_string()),
-  };
+  let t = Test { event: Event::Custom("blablabla".to_string()) };
   let val = serde_json::to_string(&t).unwrap();
   println!("{}", val);
   assert_eq!(val, "{\"event\":\"blablabla\"}");
