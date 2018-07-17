@@ -16,8 +16,8 @@ matrix:
     - rust: nightly
   include:
     # Rustfmt
-    - env: RUSTFMT_VERSION="0.8.1"
-      rust: nightly-2018-07-07
+    - env: RUSTFMT_VERSION="0.8.2"
+      rust: nightly-2018-07-16
       install:
         - rustup component add rustfmt-preview
         - cargo install rustfmt-nightly --force --version $RUSTFMT_VERSION || echo "rustfmt already installed"
@@ -27,8 +27,8 @@ matrix:
         - cargo fmt -- --write-mode=diff
 
     # Clippy
-    - env: CLIPPY_VERSION="0.0.191"
-      rust: nightly-2018-04-01
+    - env: CLIPPY_VERSION="0.0.212"
+      rust: nightly-2018-07-16
       install:
       - travis_wait cargo install clippy --version $CLIPPY_VERSION || echo "clippy already installed"
       script:
