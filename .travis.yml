@@ -20,9 +20,8 @@ matrix:
       rust: nightly-2018-07-16
       install:
         - rustup component add rustfmt-preview
-        - cargo install rustfmt --force --version $RUSTFMT_VERSION || echo "rustfmt already installed"
       before_script:
-        - cargo-fmt fmt -- --version
+        - cargo fmt -- --version
       script:
         - cargo fmt -- --write-mode=diff
 
@@ -30,7 +29,9 @@ matrix:
     - env: CLIPPY_VERSION="0.0.212"
       rust: nightly-2018-07-16
       install:
-      - travis_wait cargo install clippy --version $CLIPPY_VERSION || echo "clippy already installed"
+        - rustup component add clippy-preview
+      before_script:
+        - cargo clippy -- --version
       script:
         # Fail if clippy output contains "error:" or "warning:"
         - cargo clippy 2>&1 | tee ./clippy.out && ! grep -qe  "error:\|warning:" ./clippy.out
