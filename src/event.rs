@@ -1,4 +1,3 @@
-use serde_json;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
@@ -26,6 +25,8 @@ pub struct Test {
 
 #[test]
 fn test_event_serialization() {
+  use serde_json;
+
   let t = Test { event: Event::Custom("blablabla".to_string()) };
   let val = serde_json::to_string(&t).unwrap();
   println!("{}", val);
