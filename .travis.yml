@@ -19,25 +19,25 @@ matrix:
     - env: RUSTFMT_VERSION="0.8.2"
       rust: nightly-2018-07-16
       install:
-        - rustup component add rustfmt-preview --toolchain=nightly
+        - rustup component add rustfmt-preview
       before_script:
-        - cargo +nightly fmt -- --version
+        - cargo fmt -- --version
       script:
-        - cargo +nightly fmt -- --write-mode=diff
+        - cargo fmt -- --write-mode=diff
 
     # Clippy
     - env: CLIPPY_VERSION="0.0.212"
       rust: nightly-2018-07-16
       install:
-        - rustup component add clippy-preview --toolchain=nightly
+        - rustup component add clippy-preview
       before_script:
-        - cargo +nightly clippy -- --version
+        - cargo clippy -- --version
       script:
         # Fail if clippy output contains "error:" or "warning:"
-        - cargo +nightly clippy 2>&1 | tee ./clippy.out && ! grep -qe  "error:\|warning:" ./clippy.out
+        - cargo clippy 2>&1 | tee ./clippy.out && ! grep -qe  "error:\|warning:" ./clippy.out
 
     # Test coverage (with Tarpaulin)
-    - env: TARPAULIN_VERSION="0.6.3"
+    - env: TARPAULIN_VERSION="0.6.2"
       rust: stable
       # To avoid "Error: EPERM: operation not permitted" error (see https://github.com/valery-barysok/session-file-store/issues/58)
       sudo: true
