@@ -63,14 +63,11 @@ impl Phoenix {
             return;
           }
         };
-        match message {
-          OwnedMessage::Close(_) => {
-            debug!("Received a close message");
-            let _ = sender.send_message(&message);
-            // If it's a close message, just send it and then return.
-            return;
-          }
-          _ => (),
+        if let OwnedMessage::Close(_) = message {
+          debug!("Received a close message");
+          let _ = sender.send_message(&message);
+          // If it's a close message, just send it and then return.
+          return;
         }
         // Send the message
         match sender.send_message(&message) {
@@ -121,7 +118,7 @@ impl Phoenix {
           // Say what we received
           OwnedMessage::Text(data) => {
             let v: PhoenixMessage = serde_json::from_str(&data).unwrap();
-            send.send(v);
+            let _r = send.send(v);
           }
 
           message => debug!("Receive Loop: {:?}", message),
@@ -155,7 +152,7 @@ impl Phoenix {
   }
 
   pub fn channel(&mut self, topic: &str) -> Arc<Mutex<Channel>> {
-    self.count = self.count + 1;
+    self.count += 1;
     let chan = Arc::new(Mutex::new(Channel::new(topic, self.tx.clone(), &format!("{}", self.count))));
     let mut channels = self.channels.lock().unwrap();
     channels.push(chan.clone());
