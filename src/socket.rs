@@ -128,13 +128,13 @@ impl Phoenix {
 
     let tx_h = tx.clone();
     thread::spawn(move || loop {
-                   let msg = PhoenixMessage {⏎
-                     topic: "phoenix".to_owned(),⏎
-                     event: Event::Defined(PhoenixEvent::Heartbeat),⏎
-                     reference: None,⏎
-                     join_ref: None,⏎
-                     payload: serde_json::from_str("{}").unwrap(),⏎
-                   };⏎
+                   let msg = PhoenixMessage {
+                     topic: "phoenix".to_owned(),
+                     event: Event::Defined(PhoenixEvent::Heartbeat),
+                     reference: None,
+                     join_ref: None,
+                     payload: serde_json::from_str("{}").unwrap(),
+                   };
 
                    tx_h
                      .send(OwnedMessage::Text(serde_json::to_string(&msg).unwrap()))

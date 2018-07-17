@@ -1,5 +1,4 @@
 extern crate phoenix;
-#[macro_use]
 extern crate serde_json;
 
 extern crate env_logger;
@@ -39,9 +38,8 @@ fn main() {
   {
     let mut device_chan = mutex_chan.lock().unwrap();
     device_chan.join();
-    device_chan.send(Event::Custom("new_msg".to_string()),
-                     serde_json::from_str(r#"{"body": "Hello"}"#).unwrap(),
-    );
+    let body = serde_json::from_str(r#"{"body": "Hello"}"#).unwrap();
+    device_chan.send(Event::Custom("new_msg".to_string()), &body);
   }
 
   loop {

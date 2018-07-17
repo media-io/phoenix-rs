@@ -1,3 +1,4 @@
+use serde_json;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
