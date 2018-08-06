@@ -22,7 +22,7 @@ impl Channel {
   }
 
   pub fn send(&mut self, event: Event, msg: &Value) {
-    let msg = Message {
+    let message = Message {
       topic: self.topic.to_owned(),
       event,
       reference: Some(self.reference.to_owned()),
@@ -32,7 +32,7 @@ impl Channel {
 
     self
       .tx
-      .send(OwnedMessage::Text(serde_json::to_string(&msg).unwrap()))
+      .send(OwnedMessage::Text(serde_json::to_string(&message).unwrap()))
       .unwrap();
   }
 
