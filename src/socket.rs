@@ -39,12 +39,17 @@ impl Phoenix {
 
     debug!("connect socket to URL: {}", full_url);
 
-    let client = ClientBuilder::new(&full_url)
+    let mut sender =
+      match ClientBuilder::new(&full_url)
       .unwrap()
-      .connect_insecure()
+      .connect(None)
       .unwrap();
 
-    let (mut receiver, mut sender) = client.split().unwrap();
+    let mut receiver =
+      match ClientBuilder::new(&full_url)
+      .unwrap()
+      .connect(None)
+      .unwrap();
 
     let (tx, rx) = channel();
 
@@ -154,8 +159,11 @@ impl Phoenix {
 
   pub fn channel(&mut self, topic: &str) -> Arc<Mutex<Channel>> {
     self.count += 1;
-    let chan =
-      Arc::new(Mutex::new(Channel::new(topic, self.tx.clone(), &format!("{}", self.count))));
+    let chan = Arc::new(Mutex::new(Channel::new(
+      topic,
+      self.tx.clone(),
+      &format!("{}", self.count),
+    )));
     let mut channels = self.channels.lock().unwrap();
     channels.push(chan.clone());
     chan

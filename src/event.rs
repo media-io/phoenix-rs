@@ -1,4 +1,3 @@
-
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum Event {
@@ -27,7 +26,9 @@ pub struct Test {
 fn test_event_serialization() {
   use serde_json;
 
-  let t = Test { event: Event::Custom("blablabla".to_string()) };
+  let t = Test {
+    event: Event::Custom("blablabla".to_string()),
+  };
   let val = serde_json::to_string(&t).unwrap();
   println!("{}", val);
   assert_eq!(val, "{\"event\":\"blablabla\"}");
