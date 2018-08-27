@@ -40,13 +40,13 @@ impl Phoenix {
     debug!("connect socket to URL: {}", full_url);
 
     let mut sender =
-      match ClientBuilder::new(&full_url)
+      ClientBuilder::new(&full_url)
       .unwrap()
       .connect(None)
       .unwrap();
 
     let mut receiver =
-      match ClientBuilder::new(&full_url)
+      ClientBuilder::new(&full_url)
       .unwrap()
       .connect(None)
       .unwrap();
