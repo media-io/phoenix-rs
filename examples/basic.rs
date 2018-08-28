@@ -1,19 +1,26 @@
+extern crate env_logger;
 extern crate phoenix;
 extern crate serde_json;
-
-extern crate env_logger;
+extern crate tokio_core;
+extern crate websocket;
 
 use phoenix::{Event, Phoenix};
 use std::{thread, time};
+use tokio_core::reactor::Core;
+use websocket::futures::sync::mpsc::channel;
+use websocket::futures::Stream;
 
 fn main() {
   env_logger::init();
 
   let url = "ws://localhost:4000/socket";
 
+  let (sender, emitter) = channel(0);
+  let (callback, messages) = channel(0);
+
   // Simulate a user
   thread::spawn(move || {
-    let mut phx = Phoenix::new(url);
+    let mut phx = Phoenix::new(&sender, emitter, &callback, url);
     let mutex_chan = phx.channel("room:lobby").clone();
 
     {
@@ -21,18 +28,22 @@ fn main() {
       device_chan.join();
     }
 
-    loop {
-      match phx.out.recv() {
-        Ok(msg) => println!("user1: {:?}", msg),
-        Err(_err) => (), //println!("{:?}", err)
-      }
-    }
+    let runner = messages.for_each(|message| {
+      println!("user1: {:?}", message);
+      Ok(())
+    });
+
+    let mut core = Core::new().unwrap();
+    core.run(runner).unwrap();
   });
 
   thread::sleep(time::Duration::from_millis(500));
 
   // Simulate an other user
-  let mut phx = Phoenix::new(url);
+
+  let (sender, emitter) = channel(0);
+  let (callback, messages) = channel(0);
+  let mut phx = Phoenix::new(&sender, emitter, &callback, url);
   let mutex_chan = phx.channel("room:lobby").clone();
 
   {
@@ -42,10 +53,11 @@ fn main() {
     device_chan.send(Event::Custom("new_msg".to_string()), &body);
   }
 
-  loop {
-    match phx.out.recv() {
-      Ok(msg) => println!("user2: {:?}", msg),
-      Err(_err) => (), //println!("{:?}", err)
-    }
-  }
+  let runner = messages.for_each(|message| {
+    println!("user2: {:?}", message);
+    Ok(())
+  });
+
+  let mut core = Core::new().unwrap();
+  core.run(runner).unwrap();
 }

@@ -1,29 +1,42 @@
 use std::collections::HashMap;
-use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::{thread, time};
 
 use serde_json;
 use websocket::client::ClientBuilder;
-use websocket::{Message, OwnedMessage};
+use websocket::OwnedMessage;
 
 use chan::Channel;
 use event::{Event, PhoenixEvent};
 use message::Message as PhoenixMessage;
+use tokio_core::reactor::Core;
+use websocket::futures::sync::mpsc::{Receiver, Sender};
+use websocket::futures::{Future, Sink, Stream};
+use websocket::result::WebSocketError;
 
 pub struct Phoenix {
-  tx: Sender<OwnedMessage>,
   count: u8,
   channels: Arc<Mutex<Vec<Arc<Mutex<Channel>>>>>,
-  pub out: Receiver<PhoenixMessage>,
+  sender: Sender<OwnedMessage>,
 }
 
 impl Phoenix {
-  pub fn new(url: &str) -> Phoenix {
-    Phoenix::new_with_parameters(url, &HashMap::new())
+  pub fn new(
+    sender: &Sender<OwnedMessage>,
+    receiver: Receiver<OwnedMessage>,
+    callback: &Sender<PhoenixMessage>,
+    url: &str,
+  ) -> Phoenix {
+    Phoenix::new_with_parameters(sender, receiver, callback, url, &HashMap::new())
   }
 
-  pub fn new_with_parameters(url: &str, params: &HashMap<&str, &str>) -> Phoenix {
+  pub fn new_with_parameters(
+    sender: &Sender<OwnedMessage>,
+    receiver: Receiver<OwnedMessage>,
+    callback: &Sender<PhoenixMessage>,
+    url: &str,
+    params: &HashMap<&str, &str>,
+  ) -> Phoenix {
     let full_url = if params.is_empty() {
       format!("{}/websocket", url)
     } else {
@@ -39,98 +52,35 @@ impl Phoenix {
 
     debug!("connect socket to URL: {}", full_url);
 
-    let mut sender = ClientBuilder::new(&full_url)
-      .unwrap()
-      .connect(None)
-      .unwrap();
-
-    let mut receiver = ClientBuilder::new(&full_url)
-      .unwrap()
-      .connect(None)
-      .unwrap();
-
-    let (tx, rx) = channel();
-
-    let tx_1 = tx.clone();
-
+    let c = callback.clone();
     thread::spawn(move || {
-      loop {
-        // Send loop
-        let message = match rx.recv() {
-          Ok(m) => {
-            debug!("Send Loop: {:?}", m);
-            m
-          }
-          Err(e) => {
-            error!("Send Loop: {:?}", e);
-            return;
-          }
-        };
-        if let OwnedMessage::Close(_) = message {
-          debug!("Received a close message");
-          let _ = sender.send_message(&message);
-          // If it's a close message, just send it and then return.
-          return;
-        }
-        // Send the message
-        match sender.send_message(&message) {
-          Ok(()) => (),
-          Err(e) => {
-            error!("Send Loop: {:?}", e);
-            let _ = sender.send_message(&Message::close());
-            return;
-          }
-        }
-      }
-    });
+      let mut core = Core::new().unwrap();
 
-    let channels: Arc<Mutex<Vec<Arc<Mutex<Channel>>>>> = Arc::new(Mutex::new(vec![]));
-    let (send, recv) = channel();
-
-    thread::spawn(move || {
-      // Receive loop
-      for message in receiver.incoming_messages() {
-        let message = match message {
-          Ok(m) => m,
-          Err(e) => {
-            error!("Receive Loop: {:?}", e);
-            let _ = tx_1.send(OwnedMessage::Close(None));
-            return;
-          }
-        };
-
-        match message {
-          OwnedMessage::Close(x) => {
-            debug!("Received close {:?}", x);
-            // Got a close message, so send a close message and return
-            let _ = tx_1.send(OwnedMessage::Close(None));
-            return;
-          }
-
-          OwnedMessage::Ping(data) => {
-            match tx_1.send(OwnedMessage::Pong(data)) {
-              // Send a pong in response
-              Ok(()) => debug!("Received ping"),
-              Err(e) => {
-                error!("Ping: {:?}", e);
-                return;
+      let runner = ClientBuilder::new(&full_url)
+        .unwrap()
+        .async_connect(None, &core.handle())
+        .and_then(|(duplex, _)| {
+          let (sink, stream) = duplex.split();
+          stream
+            .filter_map(|message| match message {
+              OwnedMessage::Close(e) => Some(OwnedMessage::Close(e)),
+              OwnedMessage::Ping(d) => Some(OwnedMessage::Pong(d)),
+              OwnedMessage::Text(content) => {
+                let message: PhoenixMessage = serde_json::from_str(&content).unwrap();
+                let _ = c.clone().wait().send(message);
+                None
               }
-            }
-          }
+              _ => None,
+            }).select(receiver.map_err(|_| WebSocketError::NoDataAvailable))
+            .forward(sink)
+        });
 
-          // Say what we received
-          OwnedMessage::Text(data) => {
-            let v: PhoenixMessage = serde_json::from_str(&data).unwrap();
-            let _r = send.send(v);
-          }
-
-          message => debug!("Receive Loop: {:?}", message),
-        }
-      }
+      core.run(runner).unwrap();
     });
 
-    let tx_h = tx.clone();
+    let tx = sender.clone();
     thread::spawn(move || loop {
+      let mut stdin_sink = tx.clone().wait();
       let msg = PhoenixMessage {
         topic: "phoenix".to_owned(),
         event: Event::Defined(PhoenixEvent::Heartbeat),
@@ -140,18 +90,19 @@ impl Phoenix {
       };
 
       let message = OwnedMessage::Text(serde_json::to_string(&msg).unwrap());
-      if let Err(msg) = tx_h.send(message) {
-        error!("{:?}", msg);
-      }
+      stdin_sink
+        .send(message)
+        .expect("Heartbeat: Sending message across stdin channel.");
 
       thread::sleep(time::Duration::from_secs(30));
     });
 
+    let channels: Arc<Mutex<Vec<Arc<Mutex<Channel>>>>> = Arc::new(Mutex::new(vec![]));
+
     Phoenix {
-      tx: tx.clone(),
       count: 0,
       channels: channels.clone(),
-      out: recv,
+      sender: sender.clone(),
     }
   }
 
@@ -159,7 +110,7 @@ impl Phoenix {
     self.count += 1;
     let chan = Arc::new(Mutex::new(Channel::new(
       topic,
-      self.tx.clone(),
+      self.sender.clone(),
       &format!("{}", self.count),
     )));
     let mut channels = self.channels.lock().unwrap();
