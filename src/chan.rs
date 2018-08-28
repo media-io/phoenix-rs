@@ -19,7 +19,7 @@ impl Channel {
     Channel {
       topic: topic.to_owned(),
       reference: reference.to_owned(),
-      sender: sender,
+      sender,
     }
   }
 
