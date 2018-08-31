@@ -112,7 +112,7 @@ impl Phoenix {
       };
 
       let message = OwnedMessage::Text(serde_json::to_string(&msg).unwrap());
-      if let Err(_) = stdin_sink.send(message) {
+      if stdin_sink.send(message).is_err() {
         error!("unable to send Heartbeat");
         break;
       }
