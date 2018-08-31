@@ -53,7 +53,7 @@ impl Phoenix {
     debug!("connect socket to URL: {}", full_url);
 
     let c = callback.clone();
-    thread::spawn(move || {
+    thread::spawn(move || loop {
       let mut core = Core::new().unwrap();
 
       let runner = ClientBuilder::new(&full_url)
@@ -75,7 +75,9 @@ impl Phoenix {
             .forward(sink)
         });
 
-      core.run(runner).unwrap();
+      if let Err(msg) = core.run(runner) {
+        error!("{:?}", msg);
+      }
     });
 
     let tx = sender.clone();
