@@ -1,11 +1,11 @@
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(untagged)]
 pub enum Event {
   Defined(PhoenixEvent),
   Custom(String),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub enum PhoenixEvent {
   #[serde(rename = "phx_join")]
   Join,

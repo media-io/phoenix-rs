@@ -52,8 +52,9 @@ impl Phoenix {
 
     debug!("connect socket to URL: {}", full_url);
 
-    let c = callback.clone();
-    thread::spawn(move || loop {
+    let copy_callback = callback.clone();
+
+    thread::spawn(move || {
       let mut core = Core::new().unwrap();
 
       let runner = ClientBuilder::new(&full_url)
@@ -63,19 +64,38 @@ impl Phoenix {
           let (sink, stream) = duplex.split();
           stream
             .filter_map(|message| match message {
-              OwnedMessage::Close(e) => Some(OwnedMessage::Close(e)),
+              OwnedMessage::Close(e) => {
+                let message = PhoenixMessage {
+                    topic: "phoenix".to_string(),
+                    event: Event::Defined(PhoenixEvent::Close),
+                    reference: None,
+                    join_ref: None,
+                    payload: serde_json::Value::Null,
+                  };
+                let _ = copy_callback.clone().wait().send(message);
+                Some(OwnedMessage::Close(e))
+              },
               OwnedMessage::Ping(d) => Some(OwnedMessage::Pong(d)),
               OwnedMessage::Text(content) => {
                 let message: PhoenixMessage = serde_json::from_str(&content).unwrap();
-                let _ = c.clone().wait().send(message);
+                let _ = copy_callback.clone().wait().send(message);
                 None
               }
               _ => None,
-            }).select(receiver.map_err(|_| WebSocketError::NoDataAvailable))
+            })
+            .select(receiver.map_err(|_| WebSocketError::NoDataAvailable))
             .forward(sink)
         });
 
       if let Err(msg) = core.run(runner) {
+        let message = PhoenixMessage {
+            topic: "phoenix".to_string(),
+            event: Event::Defined(PhoenixEvent::Close),
+            reference: None,
+            join_ref: None,
+            payload: serde_json::Value::Null,
+          };
+        let _ = copy_callback.clone().wait().send(message);
         error!("{:?}", msg);
       }
     });
@@ -92,9 +112,10 @@ impl Phoenix {
       };
 
       let message = OwnedMessage::Text(serde_json::to_string(&msg).unwrap());
-      stdin_sink
-        .send(message)
-        .expect("Heartbeat: Sending message across stdin channel.");
+      if let Err(_) = stdin_sink.send(message) {
+        error!("unable to send Heartbeat");
+        break;
+      }
 
       thread::sleep(time::Duration::from_secs(30));
     });

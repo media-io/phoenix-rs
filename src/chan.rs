@@ -24,7 +24,9 @@ impl Channel {
   }
 
   pub fn send_message(&mut self, message: OwnedMessage) {
-    self.sender.clone().wait().send(message).unwrap();
+    if let Err(msg) = self.sender.clone().wait().send(message) {
+      error!("{:?}", msg)
+    }
   }
 
   fn build_message(&mut self, event: Event, payload: Value) -> OwnedMessage {
